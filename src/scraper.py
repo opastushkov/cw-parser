@@ -12,16 +12,13 @@ def get_token(s: Session) -> str:
     :param s: Session
     :return: token
     """
-    auth_page = BeautifulSoup(s.get(
-        url=f'{BASE_URL}users/sign_in',
-        headers=HEADERS,
-    ).text,
-    features='html.parser',
+    auth_page = BeautifulSoup(
+        s.get(url=f"{BASE_URL}users/sign_in", headers=HEADERS,).text,
+        features="html.parser",
     )
 
-    token = auth_page.find('input', 
-        {'name': 'authenticity_token'}).get('value')
-    
+    token = auth_page.find("input", {"name": "authenticity_token"}).get("value")
+
     return token
 
 
@@ -34,13 +31,13 @@ def authorization(s: Session, token: str, login: str, password: str) -> None:
     :return: None
     """
     s.post(
-        url=f'{BASE_URL}users/sign_in',
+        url=f"{BASE_URL}users/sign_in",
         headers=HEADERS,
         data={
             **DATA,
-            'user[email]': login,
-            'user[password]': password,
-            'authenticity_token': token,
+            "user[email]": login,
+            "user[password]": password,
+            "authenticity_token": token,
         },
     )
 
@@ -55,11 +52,11 @@ def get_page_with_solutions(s: Session, page_number: int) -> BeautifulSoup:
     """
     page_with_solutions = BeautifulSoup(
         s.get(
-            url=f'{BASE_URL}users/{USERNAME}/completed_solutions?'
-                f'page={page_number}',
+            url=f"{BASE_URL}users/{USERNAME}/completed_solutions?"
+            f"page={page_number}",
             headers=HEADERS,
         ).text,
-        features='html.parser',
+        features="html.parser",
     )
 
     return page_with_solutions
@@ -73,7 +70,7 @@ def get_solutions(page: BeautifulSoup) -> List[BeautifulSoup]:
     :return: list with solutions in BS format
     """
 
-    return page.find_all('div', {'class': 'list-item solutions'})
+    return page.find_all("div", {"class": "list-item solutions"})
 
 
 def parse_solutions(solutions_list) -> List[Solution]:
@@ -84,14 +81,16 @@ def parse_solutions(solutions_list) -> List[Solution]:
     :return: list with solutions
     """
 
-    return [Solution(
-        s.find("a").next,
-        s.find("h6").next[:-1],
-        s.find("a").get("href"),
-        s.find("code").next,
-        s.find("span").next,
-    )
-        for s in solutions_list]
+    return [
+        Solution(
+            s.find("a").next,
+            s.find("h6").next[:-1],
+            s.find("a").get("href"),
+            s.find("code").next,
+            s.find("span").next,
+        )
+        for s in solutions_list
+    ]
 
 
 def get_all_solutions(login: str, password: str) -> List[Solution]:
@@ -104,8 +103,8 @@ def get_all_solutions(login: str, password: str) -> List[Solution]:
         authenticity_token = get_token(session)
         authorization(session, authenticity_token, login, password)
 
-        HEADERS['Authorization'] = authenticity_token
-        HEADERS['X-Requested-With'] = 'XMLHttpRequest'
+        HEADERS["Authorization"] = authenticity_token
+        HEADERS["X-Requested-With"] = "XMLHttpRequest"
 
         it = 0
         solutions = []
